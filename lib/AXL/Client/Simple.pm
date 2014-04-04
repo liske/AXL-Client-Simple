@@ -6,8 +6,10 @@ with qw/
     AXL::Client::Simple::Role::getPhone
     AXL::Client::Simple::Role::getDeviceProfile
     AXL::Client::Simple::Role::getLine
+    AXL::Client::Simple::Role::executeSQLQuery
 /;
 use AXL::Client::Simple::Phone;
+use AXL::Client::Simple::DeviceProfile;
 use URI::Escape ();
 use Carp;
 
@@ -35,7 +37,7 @@ has server => (
 sub get_phone {
     my ($self, $phone_name) = @_;
 
-    my $device = $self->getPhone->(phoneName => $phone_name);
+    my $device = $self->getPhone->(name => $phone_name);
     if (exists $device->{'Fault'}) {
         my $f = $device->{'Fault'}->{'faultstring'};
         croak "Fault status returned from server in get_phone: $f\n";
@@ -43,7 +45,55 @@ sub get_phone {
 
     return AXL::Client::Simple::Phone->new({
         client => $self,
-        stash  => $device->{'parameters'}->{'return'}->{'device'},
+        stash  => $device->{'axlParams'}->{'return'}->{'phone'},
+    });
+}
+
+sub get_line {
+    my ($self, $pattern) = @_;
+
+    my $line = $self->getLine->(pattern => $pattern);
+
+    if (exists $line->{'Fault'}) {
+        my $f = $line->{'Fault'}->{'faultstring'};
+        croak "Fault status returned from server in get_line: $f\n";
+    }
+
+    return AXL::Client::Simple::Line->new({
+        client => $self,
+        stash  => $line->{'axlParams'}->{'return'}->{'line'},
+    });
+}
+
+sub execute_sql {
+    my ($self, $sql) = @_;
+
+    my $res = $self->executeSQLQuery->(sql => $sql);
+    if (exists $res->{'Fault'}) {
+        my $f = $res->{'Fault'}->{'faultstring'};
+        croak "Fault status returned from server in execute_sql: $f\n";
+    }
+
+    return AXL::Client::Simple::executeSQLResponse->new({
+        client => $self,
+        stash  => $res->{'parameters'}->{'return'},
+    });
+}
+
+sub get_device_profile {
+    my ($self, $profile_name) = @_;
+
+    my $profile = $self->getDeviceProfile->(
+        name => $profile_name);
+
+    if (exists $profile->{'Fault'}) {
+        my $f = $profile->{'Fault'}->{'faultstring'};
+        croak "Fault status returned from server in get_device_profile: $f\n";
+    }
+
+    return AXL::Client::Simple::DeviceProfile->new({
+        client => $self,
+        stash  => $profile->{'axlParams'}->{'return'}->{'deviceProfile'},
     });
 }
 

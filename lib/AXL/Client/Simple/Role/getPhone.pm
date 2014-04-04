@@ -12,7 +12,7 @@ sub _build_getPhone {
     return $self->wsdl->compileClient(
         operation => 'getPhone',
         transport => $self->transporter->compileClient(
-            action => 'CUCM:DB ver=7.1' ),
+            action => 'CUCM:DB ver=9.1' ),
     );
 }
 

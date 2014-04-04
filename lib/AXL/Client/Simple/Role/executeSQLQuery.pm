@@ -1,16 +1,16 @@
-package AXL::Client::Simple::Role::getLine;
+package AXL::Client::Simple::Role::executeSQLQuery;
 use Moose::Role;
 
-has getLine => (
+has executeSQLQuery => (
     is => 'ro',
     isa => 'CodeRef',
     lazy_build => 1,
 );
 
-sub _build_getLine {
+sub _build_executeSQLQuery {
     my $self = shift;
     return $self->wsdl->compileClient(
-        operation => 'getLine',
+        operation => 'executeSQLQuery',
         transport => $self->transporter->compileClient(
             action => 'CUCM:DB ver=9.1' ),
     );

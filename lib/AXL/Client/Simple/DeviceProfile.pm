@@ -1,4 +1,4 @@
-package AXL::Client::Simple::Phone;
+package AXL::Client::Simple::DeviceProfile;
 use Moose;
 
 use AXL::Client::Simple::LineResultSet;
@@ -19,53 +19,6 @@ has stash => (
     isa => 'HashRef',
     required => 1,
 );
-
-has currentProfileName => (
-    is => 'ro',
-    isa => 'Str',
-    required => 0,
-    lazy_build => 1,
-);
-
-sub _build_currentProfileName { return (shift)->stash->{currentProfileName} }
-
-has loginUserId => (
-    is => 'ro',
-    isa => 'Str',
-    required => 0,
-    lazy_build => 1,
-);
-
-sub _build_loginUserId { return (shift)->stash->{loginUserId} }
-
-sub has_active_em {
-    my $self = shift;
-    return ($self->currentProfileName && $self->loginUserId);
-}
-
-has currentProfile => (
-    is => 'ro',
-    isa => 'AXL::Client::Simple::Phone',
-    lazy_build => 1,
-);
-
-sub _build_currentProfile {
-    my $self = shift;
-    return $self if not $self->has_active_em;
-
-    my $profile = $self->client->getDeviceProfile->(
-        profileName => $self->currentProfileName);
-
-    if (exists $profile->{'Fault'}) {
-        my $f = $profile->{'Fault'}->{'faultstring'};
-        croak "Fault status returned from server in _build_currentProfile: $f\n";
-    }
-
-    return AXL::Client::Simple::Phone->new({
-        client => $self->client,
-        stash  => $profile->{'axlParams'}->{'return'}->{'profile'},
-    });
-}
 
 has lines => (
     is => 'ro',
@@ -94,11 +47,11 @@ __END__
 
 =head1 NAME
 
-AXL::Client::Simple::Phone - Properties and Lines on a CUCM Handset
+AXL::Client::Simple::DeviceProfile - Properties and Lines on a CUCM Handset
 
 =head1 VERSION
 
-This document refers to version 0.01 of AXL::Client::Simple::Phone
+This document refers to version 0.01 of AXL::Client::Simple::DeviceProfile
 
 =head1 SYNOPSIS
 
@@ -114,7 +67,7 @@ First set up your CUCM AXL client as per L<AXL::Client::Simple>:
 
 Then perform simple queries on the Unified Communications server:
 
- my $device = $cucm->get_phone('SEP001122334455');
+ my $device = $cucm->get_DeviceProfile('SEP001122334455');
  
  my $lines = $device->lines;
  printf "this device has %s lines.\n", $lines->count;
@@ -150,7 +103,7 @@ extension mobility profile lines.
 
 =head2 CONSTRUCTOR
 
-=head2 AXL::Client::Simple::Phone->new( \%arguments )
+=head2 AXL::Client::Simple::DeviceProfile->new( \%arguments )
 
 You would not normally call this constructor. Use the L<AXL::Client::Simple>
 constructor instead.
@@ -175,10 +128,10 @@ stash are retrieved data to construct each property as listed below.
 
 =head2 $device->lines
 
-Query the Unified Communications server and retrieve phone line details for
+Query the Unified Communications server and retrieve DeviceProfile line details for
 this device. 
 
-The returned object contains the ordered collection of phone lines and is of
+The returned object contains the ordered collection of DeviceProfile lines and is of
 type C<AXL::Client::Simple::LineResultSet>. It's an iterator, so you can walk
 through the list of lines (see the synposis, above). For example:
 
@@ -191,7 +144,7 @@ more items to return. Usually used in a loop along with C<has_next> like so:
 
  while ($lines->has_next) {
      print $lines->next->alertingName, "\n";  # the alerting name field from CUCM
-     print $lines->next->extn, "\n";          # the phone line extension number
+     print $lines->next->extn, "\n";          # the DeviceProfile line extension number
  }
 
 =head2 $lines->peek
@@ -219,7 +172,7 @@ Returns the number of entries returned by the C<lines> server query.
 Returns an array ref containing all the entries returned by the C<lines>
 server query. They are each objects of type C<AXL::Client::Simple::Line>.
 
-=head2 PHONE PROPERTIES
+=head2 DeviceProfile PROPERTIES
 
 =head2 $device->currentProfileName
 
@@ -241,7 +194,7 @@ it returns a false value.
 
 Assuming the device does have Extension Mobility active, then you can grab the
 extension mobility profile details from this property. In fact, what is
-returned is another instance of C<AXL::Client::Simple::Phone> (this module)
+returned is another instance of C<AXL::Client::Simple::DeviceProfile> (this module)
 which in turn allows you to access the profile's line numers via C<lines> as
 above.
 

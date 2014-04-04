@@ -12,7 +12,7 @@ sub _build_getDeviceProfile {
     return $self->wsdl->compileClient(
         operation => 'getDeviceProfile',
         transport => $self->transporter->compileClient(
-            action => 'CUCM:DB ver=7.1' ),
+            action => 'CUCM:DB ver=9.1' ),
     );
 }
 
